@@ -204,7 +204,7 @@
       font-size: 1.1rem;
     }
 
-    /* Accordion Dropdown */
+    /* Accordion Dropdown Toggle */
     .accordion-toggle {
       display: flex;
       justify-content: space-between;
@@ -327,7 +327,7 @@
       
       <!-- Top Scrollable Sports Categories Bar -->
       <div class="sports-nav-bar">
-        <div class="sport-tab active" onclick="filterSport('all', this)">🏆 All Accas</div>
+        <div class="sport-tab active" onclick="filterSport('all', this)">🏆 All Sports</div>
         <div class="sport-tab" onclick="filterSport('football', this)">⚽ Football</div>
         <div class="sport-tab" onclick="filterSport('horses', this)">🏇 Horses</div>
         <div class="sport-tab" onclick="filterSport('f1', this)">🏎️ F1</div>
@@ -338,7 +338,7 @@
       </div>
 
       <div id="acca-list">
-        <!-- Dynamic Accas inserted here -->
+        <!-- Javascript populates 3, 5, 8, 10, 12 leg dropdown cards -->
       </div>
     </div>
 
@@ -353,10 +353,10 @@
         
         <label style="font-size: 0.9rem; color: var(--text-muted);">Quick Stake ($):</label>
         <div class="stake-buttons">
-          <div class="stake-btn" onclick="setStake(5)">$5</div>
-          <div class="stake-btn active" onclick="setStake(10)">$10</div>
-          <div class="stake-btn" onclick="setStake(25)">$25</div>
-          <div class="stake-btn" onclick="setStake(50)">$50</div>
+          <div class="stake-btn" onclick="setStake(5, this)">$5</div>
+          <div class="stake-btn active" onclick="setStake(10, this)">$10</div>
+          <div class="stake-btn" onclick="setStake(25, this)">$25</div>
+          <div class="stake-btn" onclick="setStake(50, this)">$50</div>
         </div>
 
         <input type="number" id="stake-input" value="10" min="1" oninput="calculatePayout()">
@@ -580,10 +580,10 @@
       renderBetSlip();
     }
 
-    function setStake(amount) {
+    function setStake(amount, btnEl) {
       document.getElementById('stake-input').value = amount;
       document.querySelectorAll('.stake-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      btnEl.classList.add('active');
       calculatePayout();
     }
 
