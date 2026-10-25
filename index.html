@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>WinShop - Betting Companion</title>
   
   <!-- PWA & iOS Home Screen Settings -->
@@ -12,66 +12,241 @@
   <meta name="theme-color" content="#0d3b2e">
   <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/trophy.png">
   
-  <!-- Manifest JSON Data URI -->
-  <link rel="manifest" href='data:application/json,{"name":"WinShop","short_name":"WinShop","start_url":".","display":"standalone","background_color":"#0d3b2e","theme_color":"#0d3b2e","icons":[{"src":"https://img.icons8.com/color/192/trophy.png","sizes":"192x192","type":"image/png"}]}'>
-
   <style>
     :root {
       --bg-color: #061c16;
       --card-bg: #0d3b2e;
+      --card-border: rgba(223, 177, 91, 0.25);
       --gold: #dfb15b;
       --text: #ffffff;
       --text-muted: #a3b8b0;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      
+      /* Color Spectrum */
+      --c-green: #2ecc71;
+      --c-yellow: #f1c40f;
+      --c-amber: #f39c12;
+      --c-orange: #e67e22;
+      --c-red: #e74c3c;
     }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      padding-bottom: 85px;
+      user-select: none;
     }
+
     header {
       width: 100%;
       background: var(--card-bg);
-      padding: 20px 0;
+      padding: 16px 20px;
       text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    h1 {
+
+    header h1 {
       margin: 0;
       color: var(--gold);
-      font-size: 1.8rem;
-      letter-spacing: 1px;
+      font-size: 1.5rem;
+      letter-spacing: 1.5px;
     }
+
     .container {
-      width: 90%;
+      width: 92%;
       max-width: 500px;
-      margin-top: 20px;
+      margin: 15px auto;
     }
+
+    /* Top Horizontal Scrollable Sports Categories Bar */
+    .sports-nav-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 5px 0 12px 0;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sports-nav-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sport-tab {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sport-tab.active {
+      background: var(--gold);
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* Tabs Navigation */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Bottom Nav Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background-color: var(--card-bg);
+      border-top: 1px solid var(--gold);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-decoration: none;
+      cursor: pointer;
+      width: 25%;
+    }
+
+    .nav-item.active {
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .nav-icon { font-size: 1.3rem; margin-bottom: 3px; }
+
+    /* Card Styling */
     .card {
       background-color: var(--card-bg);
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       margin-bottom: 15px;
-      border: 1px solid rgba(223, 177, 91, 0.2);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+
     .card h2 {
       margin-top: 0;
       color: var(--gold);
-      font-size: 1.2rem;
-    }
-    .odds-row {
+      font-size: 1.1rem;
       display: flex;
       justify-content: space-between;
-      margin: 10px 0;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      align-items: center;
     }
+
+    /* Accumulator Cards with Color-Coding */
+    .acca-card {
+      border-left: 6px solid;
+      transition: all 0.2s ease;
+    }
+    .color-3leg  { border-left-color: var(--c-green); }
+    .color-5leg  { border-left-color: var(--c-yellow); }
+    .color-8leg  { border-left-color: var(--c-amber); }
+    .color-10leg { border-left-color: var(--c-orange); }
+    .color-12leg { border-left-color: var(--c-red); }
+
+    .badge-leg {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #000;
+      display: inline-block;
+    }
+    .badge-3leg  { background-color: var(--c-green); }
+    .badge-5leg  { background-color: var(--c-yellow); }
+    .badge-8leg  { background-color: var(--c-amber); }
+    .badge-10leg { background-color: var(--c-orange); }
+    .badge-12leg { background-color: var(--c-red); }
+
+    .acca-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .acca-title {
+      font-weight: bold;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .acca-odds {
+      color: var(--gold);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    /* Accordion Toggle Header */
+    .accordion-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 8px;
+    }
+
+    .arrow-icon {
+      transition: transform 0.2s ease;
+    }
+    .arrow-icon.open {
+      transform: rotate(180deg);
+    }
+
+    /* Accordion Content Box */
+    .accordion-content {
+      display: none;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255,255,255,0.1);
+      margin-top: 6px;
+    }
+    .accordion-content.open {
+      display: block;
+    }
+
+    .leg-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .leg-item:last-child { border-bottom: none; }
+
+    /* Buttons & Inputs */
     .btn {
       width: 100%;
       background: var(--gold);
@@ -82,23 +257,448 @@
       font-weight: bold;
       font-size: 1rem;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 12px;
     }
+
+    .btn-danger { background: var(--danger); color: #fff; }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .stat-box {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--card-border);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--gold);
+      margin-top: 4px;
+    }
+
+    .badge-win { color: var(--success); font-weight: bold; }
+    .badge-loss { color: var(--danger); font-weight: bold; }
   </style>
 </head>
 <body>
+
   <header>
     <h1>WINSHOP</h1>
   </header>
+
   <div class="container">
-    <div class="card">
-      <h2>Live Match Odds</h2>
-      <div class="odds-row">
-        <span>Team A vs Team B</span>
-        <strong style="color: var(--gold);">1.85 | 3.40</strong>
+    
+    <!-- TAB 1: ACCUMULATORS & SPORTS FILTER -->
+    <div id="tab-matches" class="tab-content active">
+      
+      <!-- Top Scrollable Sports Categories Bar -->
+      <div class="sports-nav-bar">
+        <div class="sport-tab active" onclick="filterSport('all', this)">🏆 All Sports</div>
+        <div class="sport-tab" onclick="filterSport('football', this)">⚽ Football</div>
+        <div class="sport-tab" onclick="filterSport('horses', this)">🏇 Horses</div>
+        <div class="sport-tab" onclick="filterSport('f1', this)">🏎️ F1</div>
+        <div class="sport-tab" onclick="filterSport('greyhounds', this)">🐕 Greyhounds</div>
+        <div class="sport-tab" onclick="filterSport('darts', this)">🎯 Darts</div>
+        <div class="sport-tab" onclick="filterSport('womens-football', this)">⚽ Women's Football</div>
+        <div class="sport-tab" onclick="filterSport('tennis', this)">🎾 Tennis</div>
       </div>
-      <button class="btn" onclick="alert('Odds updated!')">Refresh Odds</button>
+
+      <div id="acca-list">
+        <!-- Javascript populates 3, 5, 8, 10, 12 leg dropdown cards -->
+      </div>
     </div>
+
+    <!-- TAB 2: BET SLIP -->
+    <div id="tab-betslip" class="tab-content">
+      <div class="card">
+        <h2>Active Bet Slip</h2>
+        <div id="slip-items">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">No accumulator selected. Tap 'Add to Slip' on any card!</p>
+        </div>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+        <label for="stake-input" style="font-size: 0.9rem; color: var(--text-muted);">Enter Stake ($):</label>
+        <input type="number" id="stake-input" value="10" min="1" oninput="calculatePayout()">
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.95rem;">
+          <span>Combined Odds:</span>
+          <strong id="total-odds" style="color: var(--gold);">1.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1rem;">
+          <span>Potential Payout:</span>
+          <strong id="total-payout" style="color: var(--gold);">$0.00</strong>
+        </div>
+
+        <button class="btn" onclick="placeBet()">Place Bet & Log</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: TRACKER / DASHBOARD -->
+    <div id="tab-tracker" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div style="font-size:0.8rem; color:var(--text-muted);">Total Profit</div>
+          <div class="stat-number" id="stat-profit">$0.00</div>
+        </div>
+        <div class="stat-box">
+          <div style="font-size:0.8rem; color:var(--text-muted);">Win Rate</div>
+          <div class="stat-number" id="stat-winrate">0%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Betting History</h2>
+        <div id="history-list">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">No bets logged yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SETTINGS -->
+    <div id="tab-settings" class="tab-content">
+      <div class="card">
+        <h2>Bankroll Settings</h2>
+        <label style="font-size: 0.9rem; color: var(--text-muted);">Starting Bankroll ($):</label>
+        <input type="number" id="bankroll-input" value="500">
+        <button class="btn" onclick="saveBankroll()">Save Settings</button>
+      </div>
+
+      <div class="card">
+        <h2>Data Management</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Clear all logged bet history and reset tracker stats.</p>
+        <button class="btn btn-danger" onclick="clearHistory()">Reset All Data</button>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('matches', this)">
+      <span class="nav-icon">🔥</span>
+      <span>Accas</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('betslip', this)">
+      <span class="nav-icon">📋</span>
+      <span>Slip (<span id="slip-count">0</span>)</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('tracker', this)">
+      <span class="nav-icon">📊</span>
+      <span>Tracker</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('settings', this)">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </div>
+  </nav>
+
+  <script>
+    // Accumulators with 3, 5, 8, 10, 12 Legs & Accordion Selections
+    const accasData = [
+      {
+        id: 3,
+        legsCount: 3,
+        sport: 'football',
+        name: '3-Leg Safe Multiplier',
+        colorClass: 'color-3leg',
+        badgeClass: 'badge-3leg',
+        odds: 4.25,
+        legs: [
+          { match: 'Arsenal vs Chelsea', selection: 'Arsenal Win', odds: 1.85 },
+          { match: 'Real Madrid vs Getafe', selection: 'Over 1.5 Goals', odds: 1.28 },
+          { match: 'Lakers vs Warriors', selection: 'Lakers Moneyline', odds: 1.80 }
+        ]
+      },
+      {
+        id: 5,
+        legsCount: 5,
+        sport: 'football',
+        name: '5-Leg Balanced Acca',
+        colorClass: 'color-5leg',
+        badgeClass: 'badge-5leg',
+        odds: 12.80,
+        legs: [
+          { match: 'Man City vs Everton', selection: 'Man City Win', odds: 1.35 },
+          { match: 'Inter Milan vs Lazio', selection: 'Inter Milan ML', odds: 1.70 },
+          { match: 'Bayern vs Frankfurt', selection: 'Bayern -1 Spread', odds: 1.85 },
+          { match: 'PSG vs Marseille', selection: 'PSG Win', odds: 1.50 },
+          { match: 'Dortmund vs Mainz', selection: 'Over 2.5 Goals', odds: 1.60 }
+        ]
+      },
+      {
+        id: 8,
+        legsCount: 8,
+        sport: 'football',
+        name: '8-Leg Value Accumulator',
+        colorClass: 'color-8leg',
+        badgeClass: 'badge-8leg',
+        odds: 45.50,
+        legs: [
+          { match: 'Liverpool vs Spurs', selection: 'Liverpool Win', odds: 1.75 },
+          { match: 'Barcelona vs Valencia', selection: 'Barcelona Win', odds: 1.40 },
+          { match: 'AC Milan vs Napoli', selection: 'Both Teams to Score', odds: 1.75 },
+          { match: 'Atletico vs Sevilla', selection: 'Under 2.5 Goals', odds: 1.65 },
+          { match: 'Leipzig vs Wolfsburg', selection: 'Leipzig Win', odds: 1.55 },
+          { match: 'Porto vs Braga', selection: 'Porto Win', odds: 1.60 },
+          { match: 'Benfica vs Sporting', selection: 'Over 2.5 Goals', odds: 1.80 },
+          { match: 'Ajax vs Feyenoord', selection: 'Ajax Win', odds: 1.90 }
+        ]
+      },
+      {
+        id: 10,
+        legsCount: 10,
+        sport: 'football',
+        name: '10-Leg Mega Multiplier',
+        colorClass: 'color-10leg',
+        badgeClass: 'badge-10leg',
+        odds: 185.00,
+        legs: [
+          { match: 'Match 1', selection: 'Home Win', odds: 1.50 },
+          { match: 'Match 2', selection: 'Over 1.5 Goals', odds: 1.30 },
+          { match: 'Match 3', selection: 'Away ML', odds: 1.85 },
+          { match: 'Match 4', selection: 'BTTS - Yes', odds: 1.70 },
+          { match: 'Match 5', selection: 'Home Win', odds: 1.60 },
+          { match: 'Match 6', selection: 'Over 2.5 Goals', odds: 1.75 },
+          { match: 'Match 7', selection: 'Draw No Bet', odds: 1.45 },
+          { match: 'Match 8', selection: 'Home Win', odds: 1.55 },
+          { match: 'Match 9', selection: 'BTTS - Yes', odds: 1.80 },
+          { match: 'Match 10', selection: 'Over 1.5 Goals', odds: 1.35 }
+        ]
+      },
+      {
+        id: 12,
+        legsCount: 12,
+        sport: 'football',
+        name: '12-Leg Weekend Jackpot',
+        colorClass: 'color-12leg',
+        badgeClass: 'badge-12leg',
+        odds: 750.00,
+        legs: [
+          { match: 'Leg 1', selection: 'Home Win', odds: 1.60 },
+          { match: 'Leg 2', selection: 'Away Win', odds: 1.80 },
+          { match: 'Leg 3', selection: 'BTTS', odds: 1.75 },
+          { match: 'Leg 4', selection: 'Over 2.5', odds: 1.65 },
+          { match: 'Leg 5', selection: 'Home Win', odds: 1.45 },
+          { match: 'Leg 6', selection: 'Over 1.5', odds: 1.30 },
+          { match: 'Leg 7', selection: 'Away Win', odds: 1.95 },
+          { match: 'Leg 8', selection: 'Home Win', odds: 1.50 },
+          { match: 'Leg 9', selection: 'BTTS', odds: 1.70 },
+          { match: 'Leg 10', selection: 'Over 2.5', odds: 1.80 },
+          { match: 'Leg 11', selection: 'Draw No Bet', odds: 1.40 },
+          { match: 'Leg 12', selection: 'Home Win', odds: 1.70 }
+        ]
+      }
+    ];
+
+    let currentSlip = null;
+    let betHistory = JSON.parse(localStorage.getItem('winshop_history')) || [];
+
+    function init() {
+      renderAccas(accasData);
+      renderHistory();
+    }
+
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabName).classList.add('active');
+      el.classList.add('active');
+    }
+
+    function filterSport(sportKey, tabEl) {
+      document.querySelectorAll('.sport-tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+
+      if (sportKey === 'all') {
+        renderAccas(accasData);
+      } else {
+        const filtered = accasData.filter(a => a.sport === sportKey);
+        renderAccas(filtered.length > 0 ? filtered : accasData);
+      }
+    }
+
+    function renderAccas(list) {
+      const container = document.getElementById('acca-list');
+      container.innerHTML = '';
+
+      list.forEach(acc => {
+        const card = document.createElement('div');
+        card.className = `card acca-card ${acc.colorClass}`;
+
+        let legsHtml = acc.legs.map(l => `
+          <div class="leg-item">
+            <span>${l.match} (<strong>${l.selection}</strong>)</span>
+            <span style="color:var(--gold);">${l.odds}</span>
+          </div>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="acca-header-top">
+            <div class="acca-title">
+              <span class="badge-leg ${acc.badgeClass}">${acc.legsCount} LEGS</span>
+              ${acc.name}
+            </div>
+            <div class="acca-odds">${acc.odds}x</div>
+          </div>
+
+          <div class="accordion-toggle" onclick="toggleAccordion(${acc.id}, this)">
+            <span>View All ${acc.legsCount} Matches</span>
+            <span class="arrow-icon">▼</span>
+          </div>
+
+          <div class="accordion-content" id="acc-content-${acc.id}">
+            ${legsHtml}
+          </div>
+
+          <button class="btn" onclick="selectAcca(${acc.id})">Add to Slip</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleAccordion(id, toggleEl) {
+      const content = document.getElementById(`acc-content-${id}`);
+      const arrow = toggleEl.querySelector('.arrow-icon');
+      
+      content.classList.toggle('open');
+      arrow.classList.toggle('open');
+    }
+
+    function selectAcca(id) {
+      const acc = accasData.find(a => a.id === id);
+      currentSlip = acc;
+      
+      document.getElementById('slip-count').innerText = '1';
+      renderBetSlip();
+      switchTab('betslip', document.querySelectorAll('.nav-item')[1]);
+    }
+
+    function renderBetSlip() {
+      const container = document.getElementById('slip-items');
+      if (!currentSlip) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No accumulator selected. Tap \'Add to Slip\' on any card!</p>';
+        calculatePayout();
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="font-size:1.05rem; font-weight:bold; margin-bottom:6px; color:var(--gold);">${currentSlip.name}</div>
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">${currentSlip.legsCount} Legs Accumulator</div>
+        <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
+          <span>Combined Odds:</span> <strong style="color:var(--gold);">${currentSlip.odds}x</strong>
+        </div>
+      `;
+      calculatePayout();
+    }
+
+    function calculatePayout() {
+      const stake = parseFloat(document.getElementById('stake-input').value) || 0;
+      const odds = currentSlip ? currentSlip.odds : 0;
+      
+      document.getElementById('total-odds').innerText = odds.toFixed(2);
+      document.getElementById('total-payout').innerText = '$' + (stake * odds).toFixed(2);
+    }
+
+    function placeBet() {
+      if (!currentSlip) {
+        alert('Please select an accumulator first!');
+        return;
+      }
+
+      const stake = parseFloat(document.getElementById('stake-input').value) || 0;
+      const payout = stake * currentSlip.odds;
+
+      const newBet = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+        selections: `${currentSlip.name} (${currentSlip.legsCount} Legs)`,
+        stake,
+        payout,
+        status: 'Won'
+      };
+
+      betHistory.unshift(newBet);
+      localStorage.setItem('winshop_history', JSON.stringify(betHistory));
+
+      alert('Accumulator bet placed and logged successfully!');
+      
+      currentSlip = null;
+      document.getElementById('slip-count').innerText = '0';
+      renderBetSlip();
+      renderHistory();
+      switchTab('tracker', document.querySelectorAll('.nav-item')[2]);
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+      let totalProfit = 0;
+      let wins = 0;
+
+      if (betHistory.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No bets logged yet.</p>';
+        document.getElementById('stat-profit').innerText = '$0.00';
+        document.getElementById('stat-winrate').innerText = '0%';
+        return;
+      }
+
+      container.innerHTML = '';
+      betHistory.forEach(b => {
+        const profit = b.status === 'Won' ? (b.payout - b.stake) : -b.stake;
+        totalProfit += profit;
+        if (b.status === 'Won') wins++;
+
+        const item = document.createElement('div');
+        item.style.cssText = 'padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem;';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between;">
+            <strong>${b.selections}</strong>
+            <span class="${b.status === 'Won' ? 'badge-win' : 'badge-loss'}">${b.status}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.8rem; margin-top:4px;">
+            <span>Stake: $${b.stake} | Return: $${b.payout.toFixed(2)}</span>
+            <span>${b.date}</span>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+
+      const winRate = ((wins / betHistory.length) * 100).toFixed(0);
+      document.getElementById('stat-profit').innerText = (totalProfit >= 0 ? '+' : '') + '$' + totalProfit.toFixed(2);
+      document.getElementById('stat-winrate').innerText = winRate + '%';
+    }
+
+    function saveBankroll() {
+      alert('Bankroll settings saved!');
+    }
+
+    function clearHistory() {
+      if (confirm('Clear all history?')) {
+        betHistory = [];
+        localStorage.removeItem('winshop_history');
+        renderHistory();
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
