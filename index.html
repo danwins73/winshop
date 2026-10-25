@@ -23,7 +23,7 @@
       --danger: #e74c3c;
       --success: #2ecc71;
       
-      /* Color Spectrum */
+      /* Risk Color Spectrum */
       --c-green: #2ecc71;
       --c-yellow: #f1c40f;
       --c-amber: #f39c12;
@@ -81,9 +81,7 @@
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
     }
-    .sports-nav-bar::-webkit-scrollbar {
-      display: none;
-    }
+    .sports-nav-bar::-webkit-scrollbar { display: none; }
 
     .sport-tab {
       background: rgba(255, 255, 255, 0.08);
@@ -206,7 +204,7 @@
       font-size: 1.1rem;
     }
 
-    /* Accordion Toggle Header */
+    /* Accordion Dropdown */
     .accordion-toggle {
       display: flex;
       justify-content: space-between;
@@ -219,23 +217,16 @@
       margin-top: 8px;
     }
 
-    .arrow-icon {
-      transition: transform 0.2s ease;
-    }
-    .arrow-icon.open {
-      transform: rotate(180deg);
-    }
+    .arrow-icon { transition: transform 0.2s ease; }
+    .arrow-icon.open { transform: rotate(180deg); }
 
-    /* Accordion Content Box */
     .accordion-content {
       display: none;
       padding-top: 8px;
       border-top: 1px dashed rgba(255,255,255,0.1);
       margin-top: 6px;
     }
-    .accordion-content.open {
-      display: block;
-    }
+    .accordion-content.open { display: block; }
 
     .leg-item {
       display: flex;
@@ -245,6 +236,30 @@
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .leg-item:last-child { border-bottom: none; }
+
+    /* Quick Stake Buttons Grid */
+    .stake-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .stake-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+    .stake-btn.active {
+      background: var(--gold);
+      color: #000;
+    }
 
     /* Buttons & Inputs */
     .btn {
@@ -312,7 +327,7 @@
       
       <!-- Top Scrollable Sports Categories Bar -->
       <div class="sports-nav-bar">
-        <div class="sport-tab active" onclick="filterSport('all', this)">🏆 All Sports</div>
+        <div class="sport-tab active" onclick="filterSport('all', this)">🏆 All Accas</div>
         <div class="sport-tab" onclick="filterSport('football', this)">⚽ Football</div>
         <div class="sport-tab" onclick="filterSport('horses', this)">🏇 Horses</div>
         <div class="sport-tab" onclick="filterSport('f1', this)">🏎️ F1</div>
@@ -323,7 +338,7 @@
       </div>
 
       <div id="acca-list">
-        <!-- Javascript populates 3, 5, 8, 10, 12 leg dropdown cards -->
+        <!-- Dynamic Accas inserted here -->
       </div>
     </div>
 
@@ -335,12 +350,20 @@
           <p style="color: var(--text-muted); font-size: 0.9rem;">No accumulator selected. Tap 'Add to Slip' on any card!</p>
         </div>
         <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
-        <label for="stake-input" style="font-size: 0.9rem; color: var(--text-muted);">Enter Stake ($):</label>
+        
+        <label style="font-size: 0.9rem; color: var(--text-muted);">Quick Stake ($):</label>
+        <div class="stake-buttons">
+          <div class="stake-btn" onclick="setStake(5)">$5</div>
+          <div class="stake-btn active" onclick="setStake(10)">$10</div>
+          <div class="stake-btn" onclick="setStake(25)">$25</div>
+          <div class="stake-btn" onclick="setStake(50)">$50</div>
+        </div>
+
         <input type="number" id="stake-input" value="10" min="1" oninput="calculatePayout()">
         
         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.95rem;">
           <span>Combined Odds:</span>
-          <strong id="total-odds" style="color: var(--gold);">1.00</strong>
+          <strong id="total-odds" style="color: var(--gold);">0.00</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1rem;">
           <span>Potential Payout:</span>
@@ -374,6 +397,15 @@
 
     <!-- TAB 4: SETTINGS -->
     <div id="tab-settings" class="tab-content">
+      <div class="card">
+        <h2>Preferences</h2>
+        <label style="font-size: 0.9rem; color: var(--text-muted);">Odds Format:</label>
+        <select id="odds-format-select" onchange="changeOddsFormat(this.value)">
+          <option value="decimal">Decimal (e.g. 4.25)</option>
+          <option value="fractional">Fractional (e.g. 13/4)</option>
+        </select>
+      </div>
+
       <div class="card">
         <h2>Bankroll Settings</h2>
         <label style="font-size: 0.9rem; color: var(--text-muted);">Starting Bankroll ($):</label>
@@ -411,20 +443,21 @@
   </nav>
 
   <script>
-    // Accumulators with 3, 5, 8, 10, 12 Legs & Accordion Selections
+    // Accumulators across sports categories with color-coding and dropdown legs
     const accasData = [
       {
         id: 3,
         legsCount: 3,
         sport: 'football',
-        name: '3-Leg Safe Multiplier',
+        name: '3-Leg Safety Acca',
         colorClass: 'color-3leg',
         badgeClass: 'badge-3leg',
-        odds: 4.25,
+        decimalOdds: 4.25,
+        fractionalOdds: '13/4',
         legs: [
-          { match: 'Arsenal vs Chelsea', selection: 'Arsenal Win', odds: 1.85 },
-          { match: 'Real Madrid vs Getafe', selection: 'Over 1.5 Goals', odds: 1.28 },
-          { match: 'Lakers vs Warriors', selection: 'Lakers Moneyline', odds: 1.80 }
+          { match: 'Arsenal vs Chelsea', selection: 'Arsenal Win', odds: '1.85 (17/20)' },
+          { match: 'Real Madrid vs Getafe', selection: 'Over 1.5 Goals', odds: '1.28 (2/7)' },
+          { match: 'Lakers vs Warriors', selection: 'Lakers Moneyline', odds: '1.80 (4/5)' }
         ]
       },
       {
@@ -434,53 +467,56 @@
         name: '5-Leg Balanced Acca',
         colorClass: 'color-5leg',
         badgeClass: 'badge-5leg',
-        odds: 12.80,
+        decimalOdds: 12.80,
+        fractionalOdds: '47/4',
         legs: [
-          { match: 'Man City vs Everton', selection: 'Man City Win', odds: 1.35 },
-          { match: 'Inter Milan vs Lazio', selection: 'Inter Milan ML', odds: 1.70 },
-          { match: 'Bayern vs Frankfurt', selection: 'Bayern -1 Spread', odds: 1.85 },
-          { match: 'PSG vs Marseille', selection: 'PSG Win', odds: 1.50 },
-          { match: 'Dortmund vs Mainz', selection: 'Over 2.5 Goals', odds: 1.60 }
+          { match: 'Man City vs Everton', selection: 'Man City Win', odds: '1.35 (4/11)' },
+          { match: 'Inter Milan vs Lazio', selection: 'Inter Milan ML', odds: '1.70 (7/10)' },
+          { match: 'Bayern vs Frankfurt', selection: 'Bayern -1 Spread', odds: '1.85 (17/20)' },
+          { match: 'PSG vs Marseille', selection: 'PSG Win', odds: '1.50 (1/2)' },
+          { match: 'Dortmund vs Mainz', selection: 'Over 2.5 Goals', odds: '1.60 (3/5)' }
         ]
       },
       {
         id: 8,
         legsCount: 8,
-        sport: 'football',
-        name: '8-Leg Value Accumulator',
+        sport: 'horses',
+        name: '8-Leg Value Multiplier',
         colorClass: 'color-8leg',
         badgeClass: 'badge-8leg',
-        odds: 45.50,
+        decimalOdds: 45.50,
+        fractionalOdds: '91/2',
         legs: [
-          { match: 'Liverpool vs Spurs', selection: 'Liverpool Win', odds: 1.75 },
-          { match: 'Barcelona vs Valencia', selection: 'Barcelona Win', odds: 1.40 },
-          { match: 'AC Milan vs Napoli', selection: 'Both Teams to Score', odds: 1.75 },
-          { match: 'Atletico vs Sevilla', selection: 'Under 2.5 Goals', odds: 1.65 },
-          { match: 'Leipzig vs Wolfsburg', selection: 'Leipzig Win', odds: 1.55 },
-          { match: 'Porto vs Braga', selection: 'Porto Win', odds: 1.60 },
-          { match: 'Benfica vs Sporting', selection: 'Over 2.5 Goals', odds: 1.80 },
-          { match: 'Ajax vs Feyenoord', selection: 'Ajax Win', odds: 1.90 }
+          { match: 'Cheltenham 14:30', selection: 'Golden Ace', odds: '3.50 (5/2)' },
+          { match: 'Cheltenham 15:10', selection: 'State Man', odds: '1.75 (3/4)' },
+          { match: 'Cheltenham 15:50', selection: 'Lossiemouth', odds: '1.90 (9/10)' },
+          { match: 'Aintree 13:45', selection: 'Corach Rambler', odds: '2.20 (6/5)' },
+          { match: 'Ascot 14:15', selection: 'Shishkin', odds: '2.00 (1/1)' },
+          { match: 'Newbury 14:50', selection: 'Constitution Hill', odds: '1.30 (3/10)' },
+          { match: 'Kempton 15:25', selection: 'Bravemansgame', odds: '2.50 (6/4)' },
+          { match: 'Sandown 16:00', selection: 'Jonbon', odds: '1.60 (3/5)' }
         ]
       },
       {
         id: 10,
         legsCount: 10,
-        sport: 'football',
-        name: '10-Leg Mega Multiplier',
+        sport: 'f1',
+        name: '10-Leg Mega Boost',
         colorClass: 'color-10leg',
         badgeClass: 'badge-10leg',
-        odds: 185.00,
+        decimalOdds: 185.00,
+        fractionalOdds: '184/1',
         legs: [
-          { match: 'Match 1', selection: 'Home Win', odds: 1.50 },
-          { match: 'Match 2', selection: 'Over 1.5 Goals', odds: 1.30 },
-          { match: 'Match 3', selection: 'Away ML', odds: 1.85 },
-          { match: 'Match 4', selection: 'BTTS - Yes', odds: 1.70 },
-          { match: 'Match 5', selection: 'Home Win', odds: 1.60 },
-          { match: 'Match 6', selection: 'Over 2.5 Goals', odds: 1.75 },
-          { match: 'Match 7', selection: 'Draw No Bet', odds: 1.45 },
-          { match: 'Match 8', selection: 'Home Win', odds: 1.55 },
-          { match: 'Match 9', selection: 'BTTS - Yes', odds: 1.80 },
-          { match: 'Match 10', selection: 'Over 1.5 Goals', odds: 1.35 }
+          { match: 'British GP', selection: 'Max Verstappen Podium', odds: '1.30 (3/10)' },
+          { match: 'Monaco GP', selection: 'Charles Leclerc Pole', odds: '1.85 (17/20)' },
+          { match: 'Italian GP', selection: 'Lando Norris Top 3', odds: '1.50 (1/2)' },
+          { match: 'Spanish GP', selection: 'McLaren Pit Stop', odds: '1.70 (7/10)' },
+          { match: 'Austrian GP', selection: 'Both Red Bulls Finish', odds: '1.40 (2/5)' },
+          { match: 'Belgian GP', selection: 'Safety Car Deployed', odds: '1.35 (4/11)' },
+          { match: 'Dutch GP', selection: 'Lewis Hamilton Points', odds: '1.45 (9/20)' },
+          { match: 'Las Vegas GP', selection: 'Over 18 Finishers', odds: '1.60 (3/5)' },
+          { match: 'Abu Dhabi GP', selection: 'Pole Winner Wins Race', odds: '1.75 (3/4)' },
+          { match: 'Japanese GP', selection: 'Fastest Lap - Verstappen', odds: '1.90 (9/10)' }
         ]
       },
       {
@@ -490,25 +526,27 @@
         name: '12-Leg Weekend Jackpot',
         colorClass: 'color-12leg',
         badgeClass: 'badge-12leg',
-        odds: 750.00,
+        decimalOdds: 750.00,
+        fractionalOdds: '749/1',
         legs: [
-          { match: 'Leg 1', selection: 'Home Win', odds: 1.60 },
-          { match: 'Leg 2', selection: 'Away Win', odds: 1.80 },
-          { match: 'Leg 3', selection: 'BTTS', odds: 1.75 },
-          { match: 'Leg 4', selection: 'Over 2.5', odds: 1.65 },
-          { match: 'Leg 5', selection: 'Home Win', odds: 1.45 },
-          { match: 'Leg 6', selection: 'Over 1.5', odds: 1.30 },
-          { match: 'Leg 7', selection: 'Away Win', odds: 1.95 },
-          { match: 'Leg 8', selection: 'Home Win', odds: 1.50 },
-          { match: 'Leg 9', selection: 'BTTS', odds: 1.70 },
-          { match: 'Leg 10', selection: 'Over 2.5', odds: 1.80 },
-          { match: 'Leg 11', selection: 'Draw No Bet', odds: 1.40 },
-          { match: 'Leg 12', selection: 'Home Win', odds: 1.70 }
+          { match: 'Leg 1: Premier League', selection: 'Home Win', odds: '1.60 (3/5)' },
+          { match: 'Leg 2: La Liga', selection: 'Away Win', odds: '1.80 (4/5)' },
+          { match: 'Leg 3: Serie A', selection: 'BTTS', odds: '1.75 (3/4)' },
+          { match: 'Leg 4: Bundesliga', selection: 'Over 2.5', odds: '1.65 (13/20)' },
+          { match: 'Leg 5: Ligue 1', selection: 'Home Win', odds: '1.45 (9/20)' },
+          { match: 'Leg 6: Eredivisie', selection: 'Over 1.5', odds: '1.30 (3/10)' },
+          { match: 'Leg 7: Championship', selection: 'Away Win', odds: '1.95 (19/20)' },
+          { match: 'Leg 8: Primeira Liga', selection: 'Home Win', odds: '1.50 (1/2)' },
+          { match: 'Leg 9: Scottish Premiership', selection: 'BTTS', odds: '1.70 (7/10)' },
+          { match: 'Leg 10: Super Lig', selection: 'Over 2.5', odds: '1.80 (4/5)' },
+          { match: 'Leg 11: MLS', selection: 'Draw No Bet', odds: '1.40 (2/5)' },
+          { match: 'Leg 12: J-League', selection: 'Home Win', odds: '1.70 (7/10)' }
         ]
       }
     ];
 
     let currentSlip = null;
+    let oddsFormat = 'decimal';
     let betHistory = JSON.parse(localStorage.getItem('winshop_history')) || [];
 
     function init() {
@@ -536,6 +574,19 @@
       }
     }
 
+    function changeOddsFormat(format) {
+      oddsFormat = format;
+      renderAccas(accasData);
+      renderBetSlip();
+    }
+
+    function setStake(amount) {
+      document.getElementById('stake-input').value = amount;
+      document.querySelectorAll('.stake-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      calculatePayout();
+    }
+
     function renderAccas(list) {
       const container = document.getElementById('acca-list');
       container.innerHTML = '';
@@ -544,12 +595,7 @@
         const card = document.createElement('div');
         card.className = `card acca-card ${acc.colorClass}`;
 
-        let legsHtml = acc.legs.map(l => `
-          <div class="leg-item">
-            <span>${l.match} (<strong>${l.selection}</strong>)</span>
-            <span style="color:var(--gold);">${l.odds}</span>
-          </div>
-        `).join('');
+        const displayOdds = oddsFormat === 'fractional' ? acc.fractionalOdds : acc.decimalOdds.toFixed(2) + 'x';
 
         card.innerHTML = `
           <div class="acca-header-top">
@@ -557,16 +603,16 @@
               <span class="badge-leg ${acc.badgeClass}">${acc.legsCount} LEGS</span>
               ${acc.name}
             </div>
-            <div class="acca-odds">${acc.odds}x</div>
+            <div class="acca-odds">${displayOdds}</div>
           </div>
 
           <div class="accordion-toggle" onclick="toggleAccordion(${acc.id}, this)">
-            <span>View All ${acc.legsCount} Matches</span>
+            <span>View All ${acc.legsCount} Selections</span>
             <span class="arrow-icon">▼</span>
           </div>
 
           <div class="accordion-content" id="acc-content-${acc.id}">
-            ${legsHtml}
+            ${acc.legs.map(l => `<div class="leg-item"><span>${l.match} (<strong>${l.selection}</strong>)</span><span style="color:var(--gold);">${l.odds}</span></div>`).join('')}
           </div>
 
           <button class="btn" onclick="selectAcca(${acc.id})">Add to Slip</button>
@@ -578,7 +624,6 @@
     function toggleAccordion(id, toggleEl) {
       const content = document.getElementById(`acc-content-${id}`);
       const arrow = toggleEl.querySelector('.arrow-icon');
-      
       content.classList.toggle('open');
       arrow.classList.toggle('open');
     }
@@ -600,11 +645,13 @@
         return;
       }
 
+      const displayOdds = oddsFormat === 'fractional' ? currentSlip.fractionalOdds : currentSlip.decimalOdds.toFixed(2) + 'x';
+
       container.innerHTML = `
         <div style="font-size:1.05rem; font-weight:bold; margin-bottom:6px; color:var(--gold);">${currentSlip.name}</div>
         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">${currentSlip.legsCount} Legs Accumulator</div>
         <div style="display:flex; justify-content:space-between; font-size:0.95rem;">
-          <span>Combined Odds:</span> <strong style="color:var(--gold);">${currentSlip.odds}x</strong>
+          <span>Combined Odds:</span> <strong style="color:var(--gold);">${displayOdds}</strong>
         </div>
       `;
       calculatePayout();
@@ -612,9 +659,11 @@
 
     function calculatePayout() {
       const stake = parseFloat(document.getElementById('stake-input').value) || 0;
-      const odds = currentSlip ? currentSlip.odds : 0;
+      const odds = currentSlip ? currentSlip.decimalOdds : 0;
       
-      document.getElementById('total-odds').innerText = odds.toFixed(2);
+      const displayOdds = oddsFormat === 'fractional' && currentSlip ? currentSlip.fractionalOdds : odds.toFixed(2) + 'x';
+
+      document.getElementById('total-odds').innerText = displayOdds;
       document.getElementById('total-payout').innerText = '$' + (stake * odds).toFixed(2);
     }
 
@@ -625,7 +674,7 @@
       }
 
       const stake = parseFloat(document.getElementById('stake-input').value) || 0;
-      const payout = stake * currentSlip.odds;
+      const payout = stake * currentSlip.decimalOdds;
 
       const newBet = {
         id: Date.now(),
